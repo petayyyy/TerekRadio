@@ -79,6 +79,7 @@ async def with_puree(message: types.Message):
 
 @dp.message(Command("kill"))
 async def with_puree(message: types.Message):
+    await message.answer("Выключение бота")
     sys.exit(0)
 
 

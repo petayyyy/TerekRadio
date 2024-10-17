@@ -71,8 +71,45 @@ async def with_puree(message: types.Message):
 async def with_puree(message: types.Message):
     await message.reply(buttons_labels[4])
 @dp.message(F.text.lower() == buttons_labels[5].lower())
+async def cmd_special_buttons(message: types.Message):
+    builder = ReplyKeyboardBuilder()
+    # метод row позволяет явным образом сформировать ряд
+    # из одной или нескольких кнопок. Например, первый ряд
+    # будет состоять из двух кнопок...
+    builder.row(
+        types.KeyboardButton(text="Нет, помогло"),
+        types.KeyboardButton(text="Все ещё остались вопросы")
+    )
+    await message.answer(
+        "Ссылку на ютуб канал Терек-Радио с инструкциями: https://youtube.com/@terek-radio?si=FWB7JgVCcBpp4Ws- . Остались еще вопросы?",
+        reply_markup=builder.as_markup(resize_keyboard=True),
+    )
+
+@dp.message(F.text.lower() == "Все ещё остались вопросы".lower())
+async def cmd_special_buttons(message: types.Message):
+    builder = ReplyKeyboardBuilder()
+    # метод row позволяет явным образом сформировать ряд
+    # из одной или нескольких кнопок. Например, первый ряд
+    # будет состоять из двух кнопок...
+    builder.row(
+        types.KeyboardButton(text="Помогло")
+    )
+    await message.answer(
+        "Контакт СЦ: моб: 8 (988) 243-16-97",
+        reply_markup=builder.as_markup(resize_keyboard=True),
+    )
+
+@dp.message(F.text.lower() == "Помогло".lower())
 async def with_puree(message: types.Message):
-    await message.reply(buttons_labels[5])
+    await message.answer(
+        "Уря"
+    )
+@dp.message(F.text.lower() == "Нет, помогло".lower())
+async def with_puree(message: types.Message):
+    await message.answer(
+        "Уря"
+    )
+
 @dp.message(F.text.lower() == buttons_labels[6].lower())
 async def with_puree(message: types.Message):
     await message.reply(buttons_labels[6])

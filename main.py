@@ -4,6 +4,7 @@ from aiogram import Bot, Dispatcher, types
 from aiogram.filters.command import Command
 from aiogram.utils.keyboard import ReplyKeyboardBuilder
 from aiogram import F
+import sys
 
 TOKEN = '7338928947:AAF1UYcF9ZLL7l-Iczo4YF_zFATORBvAXb0'
 # Включаем логирование, чтобы не пропустить важные сообщения
@@ -75,6 +76,11 @@ async def with_puree(message: types.Message):
 @dp.message(F.text.lower() == buttons_labels[6].lower())
 async def with_puree(message: types.Message):
     await message.reply(buttons_labels[6])
+
+@dp.message(Command("kill"))
+async def with_puree(message: types.Message):
+    sys.exit(0)
+
 
 # Запуск процесса поллинга новых апдейтов
 async def main():

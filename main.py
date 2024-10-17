@@ -27,6 +27,27 @@ buttons_list = {""}
 #         types.BotCommand(buttons_comand[4], buttons_labels[4]),
 #     ])
 
+HomeButton = ReplyKeyboardBuilder()
+# метод row позволяет явным образом сформировать ряд
+# из одной или нескольких кнопок. Например, первый ряд
+# будет состоять из двух кнопок...
+HomeButton.row(
+    types.KeyboardButton(text=buttons_labels[0]),
+    types.KeyboardButton(text=buttons_labels[1])
+)
+HomeButton.row(types.KeyboardButton(
+    text=buttons_labels[2])
+)
+HomeButton.row(
+    types.KeyboardButton(text=buttons_labels[3]),
+    types.KeyboardButton(text=buttons_labels[4])
+)
+HomeButton.row(
+    types.KeyboardButton(text=buttons_labels[5]),
+    types.KeyboardButton(text=buttons_labels[6])
+)
+
+
 # Хэндлер на команду /start
 @dp.message(Command("start"))
 async def cmd_special_buttons(message: types.Message):
@@ -100,14 +121,16 @@ async def cmd_special_buttons(message: types.Message):
     )
 
 @dp.message(F.text.lower() == "Помогло".lower())
-async def with_puree(message: types.Message):
+async def cmd_special_buttons(message: types.Message):
     await message.answer(
-        "Уря"
+        "Уря",
+        reply_markup=HomeButton.as_markup(resize_keyboard=True),
     )
 @dp.message(F.text.lower() == "Нет, помогло".lower())
-async def with_puree(message: types.Message):
+async def cmd_special_buttons(message: types.Message):
     await message.answer(
-        "Уря"
+        "Уря",
+        reply_markup=HomeButton.as_markup(resize_keyboard=True),
     )
 
 @dp.message(F.text.lower() == buttons_labels[6].lower())

@@ -52,39 +52,17 @@ HomeButton.row(
 # Хэндлер на команду /start
 @dp.message(Command("start"))
 async def cmd_special_buttons(message: types.Message):
-    builder = ReplyKeyboardBuilder()
-    # метод row позволяет явным образом сформировать ряд
-    # из одной или нескольких кнопок. Например, первый ряд
-    # будет состоять из двух кнопок...
-    builder.row(
-        types.KeyboardButton(text=buttons_labels[0]),
-        types.KeyboardButton(text=buttons_labels[1])
-    )
-    builder.row(types.KeyboardButton(
-        text=buttons_labels[2])
-    )
-    builder.row(
-        types.KeyboardButton(text=buttons_labels[3]),
-        types.KeyboardButton(text=buttons_labels[4])
-    )
-    builder.row(
-        types.KeyboardButton(text=buttons_labels[5]),
-        types.KeyboardButton(text=buttons_labels[6])
-    )
     await message.answer(
         "Привет, это бот Терек Радио! Выбирай в меню управления дальнешее дейсвие ⬇️",
-        reply_markup=builder.as_markup(resize_keyboard=True),
+        reply_markup=HomeButton.as_markup(resize_keyboard=True),
     )
-
+# Отзыв
 @dp.message(F.text.lower() == buttons_labels[0].lower())
 async def with_puree(message: types.Message):
     lastState = 1
 
     await message.reply(buttons_labels[1])
 
-@dp.message(F.text.lower() == buttons_labels[1].lower())
-async def with_puree(message: types.Message):
-    await message.reply(buttons_labels[1])
 @dp.message(F.text.lower() == buttons_labels[2].lower())
 async def with_puree(message: types.Message):
     await message.reply(buttons_labels[2])
@@ -145,6 +123,10 @@ async def with_puree(message: types.Message):
     await message.answer("Выключение бота")
     sys.exit(0)
 
+
+@dp.message()
+async def with_puree(message: types.Message):
+    await message.reply("Хер")
 
 # Запуск процесса поллинга новых апдейтов
 async def main():

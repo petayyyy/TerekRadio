@@ -36,6 +36,3 @@ class SheetEditor():
             self.sheetService.values().update(spreadsheetId=idSheet, range=f"List1!C{len(values) + 1}", valueInputOption="USER_ENTERED", body={"values": [[str(idUser)]]}).execute()
             self.sheetService.values().update(spreadsheetId=idSheet, range=f"List1!D{len(values) + 1}", valueInputOption="USER_ENTERED", body={"values": [[str(textData)]]}).execute()
             return True
-
-
-

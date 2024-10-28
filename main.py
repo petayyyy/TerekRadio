@@ -48,6 +48,7 @@ HomeButton.row(
 )
 
 
+
 # Хэндлер на команду /start
 @dp.message(Command("start"))
 async def cmd_special_buttons(message: types.Message):
@@ -77,7 +78,9 @@ async def cmd_special_buttons(message: types.Message):
 
 @dp.message(F.text.lower() == buttons_labels[0].lower())
 async def with_puree(message: types.Message):
-    await message.reply(buttons_labels[0])
+    lastState = 1
+
+    await message.reply(buttons_labels[1])
 
 @dp.message(F.text.lower() == buttons_labels[1].lower())
 async def with_puree(message: types.Message):

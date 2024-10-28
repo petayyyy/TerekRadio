@@ -45,8 +45,6 @@ HomeButton.row(
     types.KeyboardButton(text=buttons_labels[6])
 )
 
-
-
 # Хэндлер на команду /start
 @dp.message(Command("start"))
 async def cmd_special_buttons(message: types.Message):

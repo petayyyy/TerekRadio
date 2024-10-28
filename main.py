@@ -3,8 +3,11 @@ import logging
 from aiogram import Bot, Dispatcher, types
 from aiogram.filters.command import Command
 from aiogram.utils.keyboard import ReplyKeyboardBuilder
+from aiogram.types import ReplyKeyboardRemove
 from aiogram import F
 import sys
+
+from sheetEditor import *
 
 TOKEN = '7338928947:AAF1UYcF9ZLL7l-Iczo4YF_zFATORBvAXb0'
 # Включаем логирование, чтобы не пропустить важные сообщения
@@ -18,14 +21,9 @@ buttons_labels = ["Оставить отзыв", "Сделать предлож�
 buttons_comand = ["review", "makeOffer", "buy", "dealer", "question", "service", "support"]
 buttons_list = {""}
 
-# async def set_default_commands(dp):
-#     await dp.bot.set_my_commands([
-#         types.BotCommand(buttons_comand[0], buttons_labels[0]),
-#         types.BotCommand(buttons_comand[1], buttons_labels[1]),
-#         types.BotCommand(buttons_comand[2], buttons_labels[2]),
-#         types.BotCommand(buttons_comand[3], buttons_labels[3]),
-#         types.BotCommand(buttons_comand[4], buttons_labels[4]),
-#     ])
+sh = SheetEditor()
+
+lastState = 0
 
 HomeButton = ReplyKeyboardBuilder()
 # метод row позволяет явным образом сформировать ряд
@@ -59,9 +57,14 @@ async def cmd_special_buttons(message: types.Message):
 # Отзыв
 @dp.message(F.text.lower() == buttons_labels[0].lower())
 async def with_puree(message: types.Message):
+    global lastState
     lastState = 1
 
-    await message.reply(buttons_labels[1])
+    await message.answer(
+        "Напишите и оправте отзыв в одном сообщении",
+        reply_markup=ReplyKeyboardRemove(),
+        parse_mode="MarkdownV2"
+    )
 
 @dp.message(F.text.lower() == buttons_labels[2].lower())
 async def with_puree(message: types.Message):
@@ -125,12 +128,23 @@ async def with_puree(message: types.Message):
 
 
 @dp.message()
-async def with_puree(message: types.Message):
-    await message.reply("Хер")
+async def cmd_special_buttons(message: types.Message):
+    global lastState
+    idU = message.from_user.id
+    if (lastState == 1):
+        if (sh.SendReviews(message.from_user.id, message.from_user.full_name, message.text) == False):
+            print("Err Send")
+    else: 
+        print("Erre")
+    await message.answer(
+        "Ваш отзыв успешно создан",
+        reply_markup=HomeButton.as_markup(resize_keyboard=True),
+    )
 
 # Запуск процесса поллинга новых апдейтов
 async def main():
     await dp.start_polling(bot)
 
 if __name__ == "__main__":
+    # sh = SheetEditor()
     asyncio.run(main())

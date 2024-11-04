@@ -2,14 +2,13 @@ import asyncio
 import logging
 from aiogram import Bot, Dispatcher, types
 from aiogram.filters.command import Command
-from aiogram.utils.keyboard import ReplyKeyboardBuilder
+from aiogram.utils.keyboard import ReplyKeyboardBuilder, InlineKeyboardBuilder
 from aiogram.types import ReplyKeyboardRemove
 from aiogram import F
 import sys
-
+from  configs import *
 from sheetEditor import *
 
-TOKEN = '7338928947:AAF1UYcF9ZLL7l-Iczo4YF_zFATORBvAXb0'
 # Включаем логирование, чтобы не пропустить важные сообщения
 logging.basicConfig(level=logging.INFO)
 # Объект бота
@@ -24,6 +23,7 @@ buttons_list = {""}
 sh = SheetEditor()
 
 lastState = 0
+lastUserId = 0
 
 HomeButton = ReplyKeyboardBuilder()
 # метод row позволяет явным образом сформировать ряд
@@ -45,6 +45,9 @@ HomeButton.row(
     types.KeyboardButton(text=buttons_labels[6])
 )
 
+EmptyBut = ReplyKeyboardBuilder()
+
+
 # Хэндлер на команду /start
 @dp.message(Command("start"))
 async def cmd_special_buttons(message: types.Message):
@@ -60,6 +63,18 @@ async def with_puree(message: types.Message):
 
     await message.answer(
         "Напишите и оправте отзыв в одном сообщении",
+        reply_markup=ReplyKeyboardRemove(),
+        parse_mode="MarkdownV2"
+    )
+
+# Вопрос
+@dp.message(F.text.lower() == buttons_labels[4].lower())
+async def with_puree(message: types.Message):
+    global lastState
+    lastState = 2
+
+    await message.answer(
+        "Напишите и оправте вопрос в одном сообщении",
         reply_markup=ReplyKeyboardRemove(),
         parse_mode="MarkdownV2"
     )
@@ -124,20 +139,60 @@ async def with_puree(message: types.Message):
     await message.answer("Выключение бота")
     sys.exit(0)
 
+@dp.callback_query(F.data == "answerM")
+async def send_random_value(callback: types.CallbackQuery):
+    global lastState
+    lastState = 5
+    await callback.message.answer("Пишите ответ")
+    
+@dp.callback_query(F.data == "answerM")
+async def send_random_value(callback: types.CallbackQuery):
+    global lastState
+    lastState = 5
+    await callback.message.answer("Пишите ответ")
+
+@dp.callback_query(F.data == "answerG")
+async def send_random_value(callback: types.CallbackQuery):
+    await bot.send_message(chatId,  text="Ответ устроил пользователя")
+
 
 @dp.message()
 async def cmd_special_buttons(message: types.Message):
-    global lastState
+    global lastState, lastUserId
     idU = message.from_user.id
+    print("sss")
     if (lastState == 1):
         if (sh.SendReviews(message.from_user.id, message.from_user.full_name, message.text) == False):
             print("Err Send")
-    else: 
+            await message.answer(
+                "Ваш отзыв успешно создан",
+                reply_markup=HomeButton.as_markup(resize_keyboard=True)
+            )
+    elif (lastState == 2): 
+        print("New Question")
+        lastUserId = message.from_user.id
+        builderIn = InlineKeyboardBuilder()
+        builderIn.add(types.InlineKeyboardButton(
+            text="Начать писать ответ",
+            callback_data="answerM")
+        )
+        await bot.send_message(chatId,  text=message.text, reply_markup= builderIn.as_markup())
+        await message.answer( text="Ожидайте ответа тех. поддержки", 
+            reply_markup=EmptyBut.as_markup(resize_keyboard=True)
+        )
+    elif (lastState == 5):
+        builderIn = InlineKeyboardBuilder()
+        builderIn.add(types.InlineKeyboardButton(
+            text="Помог ответ?",
+            callback_data="answerG")
+        )
+        await bot.send_message(lastUserId,  text=message.text, reply_markup= builderIn.as_markup())
+    else:
         print("Erre")
-    await message.answer(
-        "Ваш отзыв успешно создан",
-        reply_markup=HomeButton.as_markup(resize_keyboard=True),
-    )
+        # await message.answer(
+        # reply_markup=HomeButton.as_markup(resize_keyboard=True)
+        # )
+    lastState = 0
 
 # Запуск процесса поллинга новых апдейтов
 async def main():

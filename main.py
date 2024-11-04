@@ -24,6 +24,7 @@ sh = SheetEditor()
 
 lastState = 0
 lastUserId = 0
+messageAdminId = 0  
 
 HomeButton = ReplyKeyboardBuilder()
 # метод row позволяет явным образом сформировать ряд
@@ -46,8 +47,7 @@ HomeButton.row(
 )
 
 EmptyBut = ReplyKeyboardBuilder()
-
-
+    
 # Хэндлер на команду /start
 @dp.message(Command("start"))
 async def cmd_special_buttons(message: types.Message):
@@ -144,17 +144,51 @@ async def send_random_value(callback: types.CallbackQuery):
     global lastState
     lastState = 5
     await callback.message.answer("Пишите ответ")
+    await bot.edit_message_reply_markup(
+        chat_id=chatId,
+        message_id=callback.message.message_id, 
+        reply_markup=None
+    )
     
-@dp.callback_query(F.data == "answerM")
-async def send_random_value(callback: types.CallbackQuery):
-    global lastState
-    lastState = 5
-    await callback.message.answer("Пишите ответ")
 
 @dp.callback_query(F.data == "answerG")
 async def send_random_value(callback: types.CallbackQuery):
     await bot.send_message(chatId,  text="Ответ устроил пользователя")
+    await bot.edit_message_reply_markup(
+        chat_id=callback.from_user.id,
+        message_id=callback.message.message_id, 
+        reply_markup=None
+    )
+    await callback.message.answer(
+        "Были рады ответить на Ваш вопрос, пишите ещё!",
+        reply_markup=HomeButton.as_markup(resize_keyboard=True),
+    )
+@dp.callback_query(F.data == "answerB1")
+async def send_random_value(callback: types.CallbackQuery):
+    lastUserId = callback.message.from_user.id
+    builderIn = InlineKeyboardBuilder()
+    builderIn.add(types.InlineKeyboardButton(
+        text="Начать писать ответ",
+        callback_data="answerM")
+    )
+    # await bot.send_message(chatId,  text=message.text, reply_markup= builderIn.as_markup())
+    await callback.message.answer( text="Ожидайте ответа тех. поддержки", 
+        reply_markup=EmptyBut.as_markup(resize_keyboard=True)
+    )
+    await bot.send_message(chatId,  text="Ответ не устроил пользователя, разверните его", reply_markup= builderIn.as_markup())
 
+
+@dp.callback_query(F.data == "answerB2")
+async def send_random_value(callback: types.CallbackQuery):
+    global lastState, lastUserId
+    lastState = 6
+    lastUserId = callback.message.from_user.id
+
+    await callback.message.answer(
+        "Дополните вопрос и оправте его в одном сообщении",
+        reply_markup=ReplyKeyboardRemove(),
+        parse_mode="MarkdownV2"
+    )
 
 @dp.message()
 async def cmd_special_buttons(message: types.Message):
@@ -181,12 +215,32 @@ async def cmd_special_buttons(message: types.Message):
             reply_markup=EmptyBut.as_markup(resize_keyboard=True)
         )
     elif (lastState == 5):
+        # builderIn = InlineKeyboardBuilder()
+        builderIn = [
+            [
+            types.InlineKeyboardButton(text="Помог ответ?", callback_data="answerG"),
+            types.InlineKeyboardButton(text="Уточните ответ", callback_data="answerB1"),
+            types.InlineKeyboardButton(text="Задать уточняющий вопрос", callback_data="answerB2")
+            ]
+        ]
+        keyb = types.InlineKeyboardMarkup(inline_keyboard=builderIn)
+        # builderIn.add(types.InlineKeyboardButton(
+        #     text="Помог ответ?",
+        #     callback_data="answerG")
+        # )
+        await bot.send_message(lastUserId,  text=message.text, reply_markup= keyb)
+    elif (lastState == 6):
+        print("Update Question")
+        lastUserId = message.from_user.id
         builderIn = InlineKeyboardBuilder()
         builderIn.add(types.InlineKeyboardButton(
-            text="Помог ответ?",
-            callback_data="answerG")
+            text="Начать писать ответ, на дополненый вопрос",
+            callback_data="answerM")
         )
-        await bot.send_message(lastUserId,  text=message.text, reply_markup= builderIn.as_markup())
+        await bot.send_message(chatId,  text=message.text, reply_markup= builderIn.as_markup())
+        await message.answer( text="Ожидайте ответа тех. поддержки", 
+            reply_markup=EmptyBut.as_markup(resize_keyboard=True)
+        )
     else:
         print("Erre")
         # await message.answer(

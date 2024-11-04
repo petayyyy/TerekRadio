@@ -52,7 +52,7 @@ EmptyBut = ReplyKeyboardBuilder()
 @dp.message(Command("start"))
 async def cmd_special_buttons(message: types.Message):
     await message.answer(
-        "Привет, это бот Терек Радио! Выбирай в меню управления дальнешее дейсвие ⬇️",
+        "Привет, это бот Терек Радио! Выбирай в меню управления дальнейшее действие ⬇️",
         reply_markup=HomeButton.as_markup(resize_keyboard=True),
     )
 # Отзыв
@@ -74,7 +74,7 @@ async def with_puree(message: types.Message):
     lastState = 2
 
     await message.answer(
-        "Напишите и оправте вопрос в одном сообщении",
+        "Напишите Ваш вопрос",
         reply_markup=ReplyKeyboardRemove(),
         parse_mode="MarkdownV2"
     )
@@ -218,7 +218,7 @@ async def cmd_special_buttons(message: types.Message):
         # builderIn = InlineKeyboardBuilder()
         builderIn = [
             [
-            types.InlineKeyboardButton(text="Овет был полезен", callback_data="answerG"),
+            types.InlineKeyboardButton(text="Ответ был полезен", callback_data="answerG"),
             types.InlineKeyboardButton(text="Уточните ответ", callback_data="answerB1"),
             types.InlineKeyboardButton(text="Задать ещё вопрос", callback_data="answerB2")
             ]

@@ -218,9 +218,9 @@ async def cmd_special_buttons(message: types.Message):
         # builderIn = InlineKeyboardBuilder()
         builderIn = [
             [
-            types.InlineKeyboardButton(text="Помог ответ?", callback_data="answerG"),
+            types.InlineKeyboardButton(text="Овет был полезен", callback_data="answerG"),
             types.InlineKeyboardButton(text="Уточните ответ", callback_data="answerB1"),
-            types.InlineKeyboardButton(text="Задать уточняющий вопрос", callback_data="answerB2")
+            types.InlineKeyboardButton(text="Задать ещё вопрос", callback_data="answerB2")
             ]
         ]
         keyb = types.InlineKeyboardMarkup(inline_keyboard=builderIn)

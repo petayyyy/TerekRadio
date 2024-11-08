@@ -11,6 +11,7 @@ class SheetEditor():
         self.httpAuth = self.credentials.authorize(httplib2.Http()) # Авторизуемся в системе
         self.service = apiclient.discovery.build('sheets', 'v4', http = self.httpAuth) # Выбираем работу с таблицами и 4 версию API 
         self.sheetService = self.service.spreadsheets()
+        self.listDiller = []
     def SendReviews(self, idUser, nameUser, rev):
         return self.SendDataOther(idSheet=idReviews, idUser=idUser, nameUser=nameUser, textData=rev)
     def SendOffer(self, idUser, nameUser, offer):
@@ -35,3 +36,16 @@ class SheetEditor():
             self.sheetService.values().update(spreadsheetId=idSheet, range=f"List1!C{len(values) + 1}", valueInputOption="USER_ENTERED", body={"values": [[str(idUser)]]}).execute()
             self.sheetService.values().update(spreadsheetId=idSheet, range=f"List1!D{len(values) + 1}", valueInputOption="USER_ENTERED", body={"values": [[str(textData)]]}).execute()
             return True
+    def ReadDataDillers(self):
+        result = (
+            self.sheetService.values()
+            .get(spreadsheetId=idDillers, range=SAMPLE_RANGE_Dillers)
+            .execute()
+        )
+        values = result.get("values", [])
+        if not values:
+            return False
+        else:
+            self.listDiller = values
+            return values
+    

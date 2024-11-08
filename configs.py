@@ -4,7 +4,7 @@ idReviews = "13X9O9ppyeDD401kCP9BH3Dh6CDHdQcAXvSrKKDBmCyc"
 idQuestion = "1jL3SLdING4TOOKA4kyCk_Cnph4PjDkMuWRFTXRFfTdc"
 idDillers = "1kPl4VfYkJHQRKg7CO-We8zlzTK__iwCdQEUwpTdnAGY"
 CREDENTIALS_FILE = 'terekradio-8ef8fb71a56c.json'  
-SAMPLE_RANGE_Dillers = "List1!A2:I"
+SAMPLE_RANGE_Dillers = "List1!A2:J"
 SAMPLE_RANGE_Other = "List1!A1:A"
 
 

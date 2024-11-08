@@ -194,14 +194,13 @@ async def send_random_value(callback: types.CallbackQuery):
 async def cmd_special_buttons(message: types.Message):
     global lastState, lastUserId
     idU = message.from_user.id
-    print("sss")
     if (lastState == 1):
-        if (sh.SendReviews(message.from_user.id, message.from_user.full_name, message.text) == False):
-            print("Err Send")
-            await message.answer(
-                "Ваш отзыв успешно создан",
-                reply_markup=HomeButton.as_markup(resize_keyboard=True)
-            )
+        print("Rewies")
+        await message.answer(
+            "Ваш отзыв успешно создан",
+            reply_markup=HomeButton.as_markup(resize_keyboard=True)
+        )
+        await sh.SendReviews(message.from_user.id, message.from_user.full_name, message.text)
     elif (lastState == 2): 
         print("New Question")
         lastUserId = message.from_user.id

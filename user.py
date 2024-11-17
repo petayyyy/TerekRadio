@@ -6,7 +6,7 @@ from buttons import HomeButton, EmptyBut, ClearBut, buttons_labels, buttons_coma
 
 class User:
     def __init__(self, userID: str, userName: str):
-        # 0 - none, 1 - questions first, 2 - question second
+        # 0 - none, 1 - questions first, 2 - question second, 3 - Rewies, 4 - Make offers, 5 - Start Serv, 6 - Serv 2
         self.state = 0
         self.user_id = userID
         self.user_name = userName
@@ -54,8 +54,17 @@ class UserList:
         self.lastWorkingQuestionsId = -1
         # id user, [questions]  
         self.dictQuestions = {}
-        self.lastUserWork = ""
-    # Провека оставшихся senderov
+        # self.lastUserWork = ""
+    """
+        Провека оставшихся senderov
+
+        :param messageU: Message from user
+        :param state:  1 - all message, 2 - answerB2, 3 - Вопрос, 4 - Сервисный центр (Start), 
+        5 - Сервисный центр (Все ещё остались вопросы), 6 - Сервисный центр (Помогло), 
+        7 - Сервисный центр (Вопросов больше нет), 8 - Отзыв, 9 - Предложение
+        10 - answerG, 11 - answerB1
+        :return: None
+    """
     async def CheckMessage(self, messageU: types.Message, state: int):
         userID = messageU.from_user.id
         text = messageU.text
@@ -63,52 +72,135 @@ class UserList:
             if (self.adminState == 92):
                 await self.botMaster.send_message(self.lastWorkingQuestionsId,  text=text, reply_markup=questionsBut)
                 self.adminState = 93
-            elif (self.adminState == 93 and self):
-                pass
             self.adminLastState = self.adminState     
             self.adminState = state
         else:
             userIdList = self.GetUser(userID=messageU.from_user.id, userName=messageU.from_user.full_name)
             self.listUser[userIdList].UpdateMessage(messageU.text)
-            if (state == 1 and self.adminState == 90 and self.listUser[userIdList].state == 1):
-                # Отправка первого вопроса
-                self.dictQuestions = { userID : [text] }
-                self.lastWorkingQuestionsId = userID
-                await self.botMaster.send_message(chatId,  text=text, reply_markup= adminButInLine.as_markup())
-                print("New Question")
-                await messageU.answer( text="Ожидайте ответа тех. поддержки", 
-                    reply_markup=EmptyBut.as_markup(resize_keyboard=True)
+            if (state == 1):
+                if (self.adminState == 90 and self.listUser[userIdList].state == 1):
+                    # Отправка первого вопроса
+                    self.dictQuestions = { userID : [text] }
+                    self.lastWorkingQuestionsId = userID
+                    await self.botMaster.send_message(chatId,  text=text, reply_markup= adminButInLine.as_markup())
+                    print("New Question")
+                    await messageU.answer( text="Ожидайте ответа тех. поддержки", 
+                        reply_markup=EmptyBut.as_markup(resize_keyboard=True)
+                    )
+                    self.listUser[userIdList].UpdateState(2)
+                    self.adminState = 91
+                elif (self.adminState != 90 and self.listUser[userIdList].state == 1):
+                    # Отправка первого вопроса в очередь
+                    self.dictQuestions.update({ userID : [text] })
+                    print(self.dictQuestions)
+                    await self.botMaster.send_message(chatId,  text="Ещё один вопрос в очереди")
+                    print("New Question in list")
+                    await messageU.answer( text="Ожидайте ответа тех. поддержки", 
+                        reply_markup=EmptyBut.as_markup(resize_keyboard=True)
+                    )
+                    self.listUser[userIdList].UpdateState(2)
+
+                elif (self.listUser[userIdList].state == 2):
+                    # Отправка второго вопроса
+                    self.dictQuestions[self.lastWorkingQuestionsId] = self.dictQuestions[self.lastWorkingQuestionsId].append(text)
+                    print("Update Question")
+                    await self.botMaster.send_message(chatId,  text=text, reply_markup= questionsAdminBut.as_markup())
+                    await messageU.answer( text="Ожидайте ответа тех. поддержки", 
+                        reply_markup=EmptyBut.as_markup(resize_keyboard=True)
+                    )
+                    self.listUser[userIdList].UpdateState(1)
+                    self.adminState = 91
+
+                elif (self.listUser[userIdList].state == 3):
+                    # Отправка отзыва
+                    print("Rewies")
+                    await self.listUser[userIdList].SetAction(7, messageU, self.sh, self.botMaster, True)
+                elif (self.listUser[userIdList].state == 4):
+                    print("MakeOffer")
+                    await self.listUser[userIdList].SetAction(8, messageU, self.sh, self.botMaster, True)
+            elif (state == 2):
+                await messageU.answer(
+                    "Дополните вопрос и оправте его в одном сообщении",
+                    reply_markup=ClearBut,
+                    parse_mode="MarkdownV2"
                 )
                 self.listUser[userIdList].UpdateState(2)
-
-            elif (state == 1 and self.adminState != 90 and self.listUser[userIdList].state == 1):
-                # Отправка первого вопроса в очередь
-                self.dictQuestions.update({ userID : [text] })
-                await self.botMaster.send_message(chatId,  text="Ещё один вопрос в очереди")
-                print("New Question in list")
-                await messageU.answer( text="Ожидайте ответа тех. поддержки", 
-                    reply_markup=EmptyBut.as_markup(resize_keyboard=True)
-                )
-                self.listUser[userIdList].UpdateState(2)
-
-            elif (state == 1 and self.listUser[userIdList].state == 2):
-                # Отправка второго вопроса
-                self.dictQuestions[self.lastWorkingQuestionsId] = self.dictQuestions[self.lastWorkingQuestionsId].append(text)
-                print("Update Question")
-                await self.botMaster.send_message(chatId,  text=text, reply_markup= questionsAdminBut.as_markup())
-                await messageU.answer( text="Ожидайте ответа тех. поддержки", 
-                    reply_markup=EmptyBut.as_markup(resize_keyboard=True)
+            elif (state == 3):
+                await messageU.answer(
+                    "Напишите Ваш вопрос",
+                    reply_markup=ClearBut,
+                    parse_mode="MarkdownV2"
                 )
                 self.listUser[userIdList].UpdateState(1)
+            elif (state == 4):
+                await messageU.answer(
+                    "Ссылку на ютуб канал Терек-Радио с инструкциями: https://youtube.com/@terek-radio?si=FWB7JgVCcBpp4Ws- . Остались еще вопросы?",
+                    reply_markup=servBut.as_markup(resize_keyboard=True)
+                )
+                self.listUser[userIdList].UpdateState(5)
+            elif (state == 5):
+                await messageU.answer(
+                    "Контакт СЦ: моб: 8 (988) 243-16-97",
+                    reply_markup=servHBut.as_markup(resize_keyboard=True),
+                )
+                self.listUser[userIdList].UpdateState(6)
+            elif (state == 6):
+                await messageU.answer(
+                        "Отлично!",
+                        reply_markup=HomeButton.as_markup(resize_keyboard=True)
+                )
+                self.listUser[userIdList].ResetState()
+            elif (state == 7):
+                await messageU.answer(
+                    "Попробуйте задать вопрос, наша тех поддержка найдет ответ на любой интересующий Вас вопрос",
+                    reply_markup=HomeButton.as_markup(resize_keyboard=True)
+                )
+                self.listUser[userIdList].ResetState()
+            elif (state == 8):
+                await messageU.answer(
+                    "Напишите и оправте отзыв в одном сообщении",
+                    reply_markup=ClearBut,
+                    parse_mode="MarkdownV2"
+                )
+                self.listUser[userIdList].UpdateState(3)
+            elif (state == 9):
+                await messageU.answer(
+                    "Напишите и оправте предложение в одном сообщении",
+                    reply_markup=ClearBut,
+                    parse_mode="MarkdownV2"
+                )
+                self.listUser[userIdList].UpdateState(4)
+            elif (state == 10):
+                await self.botMaster.send_message(chatId,  text="Ответ устроил пользователя")
+                await messageU.answer(
+                    "Были рады ответить на Ваш вопрос, пишите ещё!",
+                    reply_markup=HomeButton.as_markup(resize_keyboard=True),
+                )
+                self.listUser[userIdList].ResetState()
 
-            elif (state == 1 and self.listUser[userIdList].state == 3):
-                # Отправка отзыва
-                print("Rewies")
-                self.listUser[userIdList].SetAction(7, messageU, self.sh, self.botMaster, True)
-            elif (state == 1 and self.listUser[userIdList].state == 3):
-                print("MakeOffer")
-                self.listUser[userIdList].SetAction(8, messageU, self.sh, self.botMaster, True)
+                if self.lastWorkingQuestionsId in self.dictQuestions: del self.dictQuestions[self.lastWorkingQuestionsId]
+                self.lastSendMesId = -1
+                self.lastWorkingQuestionsId = -1
+                self.adminState = 90
+                print(len(self.dictQuestions))
+                if (len(self.dictQuestions) != 0):
+                    # Выполняем следующий вопрос по ожиданию
+                    for key, values in self.dictQuestions.items():
+                        self.lastWorkingQuestionsId = key
+                        self.adminState = 91
+                        await self.botMaster.send_message(chatId,  text=values[0], reply_markup= adminButInLine.as_markup())
+                        print("New Question")
+                        break
+            elif (state == 11):
+                await messageU.answer( text="Ожидайте ответа тех. поддержки", 
+                    reply_markup=EmptyBut.as_markup(resize_keyboard=True)
+                )
+                await self.botMaster.send_message(chatId,  text="Ответ не устроил пользователя, разверните его", reply_markup= adminButInLine.as_markup())
+                self.adminState = 91
+                self.listUser[userIdList].UpdateState(2)
+
     # Проверка админовских senderov
+    # 92 - answerM
     async def CheckAdmMessage(self, messageU: types.Message, state: int):
         if (self.CheckIsAdmin(message=messageU)):
             if (state == 92):
@@ -122,10 +214,11 @@ class UserList:
             self.adminState = state 
             
     def CheckIsAdmin(self, message: types.Message):
-        print("Chat id is " + str(message.chat.id))
         if (message.from_user.id in listAdmins):
+            print("is admin")
             return True
         if (message.chat.id  == chatId):
+            print("is admin")
             return True
         return False
     def GetUser(self, userID, userName):

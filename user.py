@@ -2,17 +2,20 @@ from configs import *
 from sheetEditor import *
 from aiogram import Bot
 from aiogram import types
-from buttons import HomeButton, EmptyBut, ClearBut, buttons_labels, buttons_comand, adminButInLine, servBut, servHBut, questionsBut, questionsAdminBut
+from buttons import HomeButton, EmptyBut, ClearBut, buttons_labels, buttons_comand, adminButInLine, servBut, servHBut, questionsBut, questionsAdminBut, mapBut
+from maps import CreateMapP, GetMapP
 
 class User:
     def __init__(self, userID: str, userName: str):
-        # 0 - none, 1 - questions first, 2 - question second, 3 - Rewies, 4 - Make offers, 5 - Start Serv, 6 - Serv 2
+        # 0 - none, 1 - questions first, 2 - question second, 3 - Rewies, 4 - Make offers, 5 - Start Serv, 6 - Serv 2, 7 - Map 1
         self.state = 0
         self.user_id = userID
         self.user_name = userName
 
         self.lastMessage = ""
         self.listMessage = []
+
+        self.listmap = []
     def UpdateState(self, newState):
         self.state = newState
         return self.state
@@ -40,12 +43,15 @@ class User:
             )
             sheets.SendOffer(self.user_id, self.user_name, self.lastMessage)
         if (isReset): self.ResetState()      
-        
 
+    def UpdateMap(self, map1, map2, map3):
+        self.listmap = [map1, map2, map3]
 class UserList:
     def __init__(self, botM: Bot):
         self.listUser = []
         self.sh = SheetEditor()
+        # Init list Dillers
+        self.sh.ReadDataDillers()
         self.botMaster = botM
         # self.adminsLastM = ""
         # 90 - wait message, 91 - get question, 92 - write answer, 93 - send answer, wait user ok, 94 - get update questions
@@ -54,6 +60,8 @@ class UserList:
         self.lastWorkingQuestionsId = -1
         # id user, [questions]  
         self.dictQuestions = {}
+        # user_id, chat_id
+        self.listmapUser = []
         # self.lastUserWork = ""
     """
         Провека оставшихся senderov
@@ -62,7 +70,8 @@ class UserList:
         :param state:  1 - all message, 2 - answerB2, 3 - Вопрос, 4 - Сервисный центр (Start), 
         5 - Сервисный центр (Все ещё остались вопросы), 6 - Сервисный центр (Помогло), 
         7 - Сервисный центр (Вопросов больше нет), 8 - Отзыв, 9 - Предложение
-        10 - answerG, 11 - answerB1
+        10 - answerG, 11 - answerB1,
+        12 - map init, 13 - map 1, 14 - map 2, 15 - map 3
         :return: None
     """
     async def CheckMessage(self, messageU: types.Message, state: int):
@@ -118,6 +127,21 @@ class UserList:
                 elif (self.listUser[userIdList].state == 4):
                     print("MakeOffer")
                     await self.listUser[userIdList].SetAction(8, messageU, self.sh, self.botMaster, True)
+                elif (self.listUser[userIdList].state == 7):
+                    print("Check map")
+                    lat, lon, addStr = GetMapP(messageU.text)
+                    if (lat != 0 and lon != 0):
+                        min1, min2, min3 = self.sh.CheckDillers(lat=lat, lon=lon)
+                        self.listUser[userIdList].UpdateMap(min1, min2, min3)
+                        mesOut = "1 => " + self.GetStrOut(min1[6:8]) + "\n" + "2 => " +  self.GetStrOut(min2[6:8]) + "\n" + "3 => " + self.GetStrOut(min3[6:8]) + "\n"
+                        await messageU.answer( text= mesOut, 
+                            reply_markup=mapBut
+                        )
+                        self.listmapUser.append([self.listUser[userIdList].user_id, messageU.chat.id])
+                    else:
+                        await messageU.answer( text="Вы допустили ошибку в написании аддреса.\nПовторно напишите Ваш аддрес для подбора \nдля Вас наиближайшего диллера в формате \nГород улица, пример \nг.\ Москва ул.\ Пионеров", 
+                            reply_markup=EmptyBut.as_markup(resize_keyboard=True)
+                        )
             elif (state == 2):
                 await messageU.answer(
                     "Дополните вопрос и оправте его в одном сообщении",
@@ -182,7 +206,6 @@ class UserList:
                 self.lastSendMesId = -1
                 self.lastWorkingQuestionsId = -1
                 self.adminState = 90
-                print(len(self.dictQuestions))
                 if (len(self.dictQuestions) != 0):
                     # Выполняем следующий вопрос по ожиданию
                     for key, values in self.dictQuestions.items():
@@ -198,8 +221,62 @@ class UserList:
                 await self.botMaster.send_message(chatId,  text="Ответ не устроил пользователя, разверните его", reply_markup= adminButInLine.as_markup())
                 self.adminState = 91
                 self.listUser[userIdList].UpdateState(2)
+            elif (state == 12):
+                await messageU.answer(
+                    "Напишите Ваш аддрес для подбора \nдля Вас наиближайшего диллера в формате \nГород улица, пример \nг\. Москва ул\. Пионеров",
+                    reply_markup=ClearBut,
+                    parse_mode="MarkdownV2"
+                )
+                self.listUser[userIdList].UpdateState(7)
+            elif (state == 13):
+                idCurrentU = -1
+                for ii in range(len(self.listmapUser)):
+                    if (self.listmapUser[ii][1] == messageU.chat.id):
+                        idCurrentU = ii
+                        break
+                if (idCurrentU != -1):
+                    uuuId = self.GetUserById(self.listmapUser[idCurrentU][0])
+                    await messageU.answer(
+                        self.GetStrOut(self.listUser[uuuId].listmap[0][:8], "\n"),
+                        reply_markup=HomeButton.as_markup(resize_keyboard=True)
+                    )
+                    self.listUser[uuuId].ResetState()
+                    del self.listmapUser[idCurrentU]
+            elif (state == 14):
+                idCurrentU = -1
+                for ii in range(len(self.listmapUser)):
+                    if (self.listmapUser[ii][1] == messageU.chat.id):
+                        idCurrentU = ii
+                        break
+                if (idCurrentU != -1):
+                    uuuId = self.GetUserById(self.listmapUser[idCurrentU][0])
+                    await messageU.answer(
+                        self.GetStrOut(self.listUser[uuuId].listmap[1][:8], "\n"),
+                        reply_markup=HomeButton.as_markup(resize_keyboard=True)
+                    )
+                    self.listUser[uuuId].ResetState()
+                    del self.listmapUser[idCurrentU]
+            elif (state == 15):
+                idCurrentU = -1
+                for ii in range(len(self.listmapUser)):
+                    if (self.listmapUser[ii][1] == messageU.chat.id):
+                        idCurrentU = ii
+                        break
+                if (idCurrentU != -1):
+                    uuuId = self.GetUserById(self.listmapUser[idCurrentU][0])
+                    await messageU.answer(
+                        self.GetStrOut(self.listUser[uuuId].listmap[2][:8], "\n"),
+                        reply_markup=HomeButton.as_markup(resize_keyboard=True)
+                    )
+                    self.listUser[uuuId].ResetState()
+                    del self.listmapUser[idCurrentU]
+    def GetStrOut(self, array, step:str = " "):
+        outStr = ""
+        for i in array:
+            outStr += str(i) + step
+        return outStr   
     # Проверка админовских senderov
-    # 92 - answerM
+    # 92 - answerM, 93 - updateDillers
     async def CheckAdmMessage(self, messageU: types.Message, state: int):
         if (self.CheckIsAdmin(message=messageU)):
             if (state == 92):
@@ -209,6 +286,8 @@ class UserList:
                     message_id=messageU.message_id, 
                     reply_markup=None
                 )  
+            elif(state == 93):
+                self.sh.ReadDataDillers()
             self.adminLastState = self.adminState     
             self.adminState = state           
     def CheckIsAdmin(self, message: types.Message):
@@ -231,6 +310,15 @@ class UserList:
         else:
             self.AddUser(userID, userName)
             return len(self.listUser) - 1
+    def GetUserById(self, userID):
+        if (userID in listAdmins): return -2
+        useridInListSel = -1
+        for i in range(len(self.listUser)):
+            if (self.listUser[i].user_id == userID):
+                useridInListSel = i
+                break
+        if (useridInListSel != -1):
+           return useridInListSel
     def AddUser(self, userId, userName):
         self.listUser.append(User(userId, userName))
     def PrintData(self):

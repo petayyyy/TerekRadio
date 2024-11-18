@@ -46,13 +46,7 @@ async def with_puree(message: types.Message):
 # Купить
 @dp.message(F.text.lower() == buttons_labels[2].lower())
 async def with_puree(message: types.Message):
-    # print(len(sh.ReadDataDillers()))
-    await message.answer(
-        "Напишите Ваш аддрес для подбора \nдля Вас наиближайшего диллера в формате \nГород улица, пример \nг\. Москва ул\. Пионеров",
-        reply_markup=ClearBut,
-        parse_mode="MarkdownV2"
-    )
-
+    await listUs.CheckMessage(messageU=message, state=12)
 #region Answers
 # Вопрос
 @dp.message(F.text.lower() == buttons_labels[4].lower())
@@ -117,10 +111,12 @@ async def with_puree(message: types.Message):
 @dp.message(Command("updateSheet"))
 async def with_puree(message: types.Message):
     if (listUs.CheckIsAdmin(message)):
+        await listUs.CheckAdmMessage(messageU=message, state=93)
         print("Update sheet data")
 @dp.message(Command("updateList"))
 async def with_puree(message: types.Message):
     if (listUs.CheckIsAdmin(message)):
+        await listUs.CheckAdmMessage(messageU=message, state=93)
         print("Update sheet data")
 @dp.message(Command("clearUser"))
 async def with_puree(message: types.Message):
@@ -131,12 +127,40 @@ async def with_puree(message: types.Message):
     if (listUs.CheckIsAdmin(message)):
         msg = listUs.PrintData()
         print(msg)
-        await message.answer(
-            msg,
-            reply_markup=ClearBut,
-            parse_mode="MarkdownV2"
-        )
+        # await message.answer(
+        #     msg,
+        #     reply_markup=ClearBut,
+        #     parse_mode="MarkdownV2"
+        # )
 #endregion 
+
+#region Map
+@dp.callback_query(F.data == "map1")
+async def send_random_value(callback: types.CallbackQuery):
+    await bot.edit_message_reply_markup(
+        chat_id=callback.from_user.id,
+        message_id=callback.message.message_id, 
+        reply_markup=None
+    )
+    await listUs.CheckMessage(messageU=callback.message, state=13)
+@dp.callback_query(F.data == "map2")
+async def send_random_value(callback: types.CallbackQuery):
+    await bot.edit_message_reply_markup(
+        chat_id=callback.from_user.id,
+        message_id=callback.message.message_id, 
+        reply_markup=None
+    )
+    await listUs.CheckMessage(messageU=callback.message, state=14)
+@dp.callback_query(F.data == "map3")
+async def send_random_value(callback: types.CallbackQuery):
+    await bot.edit_message_reply_markup(
+        chat_id=callback.from_user.id,
+        message_id=callback.message.message_id, 
+        reply_markup=None
+    )
+    await listUs.CheckMessage(messageU=callback.message, state=15)
+#endregion
+
 
 @dp.message()
 async def cmd_special_buttons(message: types.Message):

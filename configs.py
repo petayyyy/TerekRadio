@@ -11,5 +11,6 @@ SAMPLE_RANGE_Other = "List1!A1:A"
 # Bot info
 TOKEN = '7338928947:AAF1UYcF9ZLL7l-Iczo4YF_zFATORBvAXb0'
 MainAdminId = '414231719'
+ReplyButtonId = '7338928947'
 listAdmins = ['0', '0', '0']
 chatId = -4550917364

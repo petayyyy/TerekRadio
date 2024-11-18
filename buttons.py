@@ -68,3 +68,13 @@ questionsAdminBut.add(types.InlineKeyboardButton(
     text="Начать писать ответ, на дополненый вопрос",
     callback_data="answerM")
 )
+
+# map
+mapBuld = [
+    [
+    types.InlineKeyboardButton(text="1", callback_data="map1"),
+    types.InlineKeyboardButton(text="2", callback_data="map2"),
+    types.InlineKeyboardButton(text="3", callback_data="map3")
+    ]
+]
+mapBut = types.InlineKeyboardMarkup(inline_keyboard=mapBuld)

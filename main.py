@@ -128,7 +128,14 @@ async def with_puree(message: types.Message):
         print("Clear user data")
 @dp.message(Command("list"))
 async def with_puree(message: types.Message):
-    print(listUs)
+    if (listUs.CheckIsAdmin(message)):
+        msg = listUs.PrintData()
+        print(msg)
+        await message.answer(
+            msg,
+            reply_markup=ClearBut,
+            parse_mode="MarkdownV2"
+        )
 #endregion 
 
 @dp.message()

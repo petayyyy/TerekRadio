@@ -47,7 +47,7 @@ class UserList:
         self.listUser = []
         self.sh = SheetEditor()
         self.botMaster = botM
-        self.adminsLastM = ""
+        # self.adminsLastM = ""
         # 90 - wait message, 91 - get question, 92 - write answer, 93 - send answer, wait user ok, 94 - get update questions
         self.adminState = 90
         self.adminLastState = 0
@@ -198,7 +198,6 @@ class UserList:
                 await self.botMaster.send_message(chatId,  text="Ответ не устроил пользователя, разверните его", reply_markup= adminButInLine.as_markup())
                 self.adminState = 91
                 self.listUser[userIdList].UpdateState(2)
-
     # Проверка админовских senderov
     # 92 - answerM
     async def CheckAdmMessage(self, messageU: types.Message, state: int):
@@ -211,8 +210,7 @@ class UserList:
                     reply_markup=None
                 )  
             self.adminLastState = self.adminState     
-            self.adminState = state 
-            
+            self.adminState = state           
     def CheckIsAdmin(self, message: types.Message):
         if (message.from_user.id in listAdmins):
             print("is admin")
@@ -235,4 +233,18 @@ class UserList:
             return len(self.listUser) - 1
     def AddUser(self, userId, userName):
         self.listUser.append(User(userId, userName))
-
+    def PrintData(self):
+        outStr = ""
+        outStr += "Admin data => state:{0}, work question:{1}, dict:[".format(self.adminState, self.lastWorkingQuestionsId)
+        for key, values in self.dictQuestions.items():
+            outStr +="user id: {0}, user text array {1}".format(key, values)
+        outStr += "]\n"
+        outStr += "////////////////////////////////////////////\n"
+        for i in self.listUser:
+            outStr += "User id: {0}, name: {1}, last message '{2}', state {3}\n".format(i.user_id, i.user_name, i.lastMessage, i.state)
+        outStr = outStr.replace("-", "\-")
+        outStr = outStr.replace(">", "\>")
+        outStr = outStr.replace("=", "\=")
+        outStr = outStr.replace("[", "\[")
+        outStr = outStr.replace("]", "\]")
+        return outStr

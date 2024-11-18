@@ -44,7 +44,7 @@ adminButInLine.add(types.InlineKeyboardButton(
 # service buttons
 servBut = ReplyKeyboardBuilder()
 servBut.row(
-    types.KeyboardButton(text="Нет, помогло"),
+    types.KeyboardButton(text="Вопросов больше нет"),
     types.KeyboardButton(text="Все ещё остались вопросы")
 )
 

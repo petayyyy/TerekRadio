@@ -71,7 +71,8 @@ class UserList:
         5 - Сервисный центр (Все ещё остались вопросы), 6 - Сервисный центр (Помогло), 
         7 - Сервисный центр (Вопросов больше нет), 8 - Отзыв, 9 - Предложение
         10 - answerG, 11 - answerB1,
-        12 - map init, 13 - map 1, 14 - map 2, 15 - map 3
+        12 - map init, 13 - map 1, 14 - map 2, 15 - map 3б
+        16 - Вопрос тех. поддержки
         :return: None
     """
     async def CheckMessage(self, messageU: types.Message, state: int):
@@ -270,6 +271,13 @@ class UserList:
                     )
                     self.listUser[uuuId].ResetState()
                     del self.listmapUser[idCurrentU]
+            elif (state == 15):
+                await messageU.answer(
+                    "Напишите Ваш вопрос",
+                    reply_markup=ClearBut,
+                    parse_mode="MarkdownV2"
+                )
+                self.listUser[userIdList].UpdateState(1)
     def GetStrOut(self, array, step:str = " "):
         outStr = ""
         for i in array:

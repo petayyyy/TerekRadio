@@ -84,6 +84,13 @@ async def send_random_value(callback: types.CallbackQuery):
         reply_markup=None
     )
     await listUs.CheckMessage(messageU=callback.message, state=2)
+
+# Тех. поддержка
+@dp.message(F.text.lower() == buttons_labels[6].lower())
+async def with_puree(message: types.Message):
+    await listUs.CheckMessage(messageU=message, state=3)
+
+
 #endregion
 
 # Сервисный центр

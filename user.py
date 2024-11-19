@@ -134,7 +134,7 @@ class UserList:
                     if (lat != 0 and lon != 0):
                         min1, min2, min3 = self.sh.CheckDillers(lat=lat, lon=lon)
                         self.listUser[userIdList].UpdateMap(min1, min2, min3)
-                        mesOut = "Мы нашли самых близких к Вам дилеров\.\nВыберите наиболее подходящий для Вас вариант:\n\n"
+                        mesOut = "Мы нашли самых близких к Вам дилеров.\nВыберите наиболее подходящий для Вас вариант:\n\n"
                         mesOut += "1⃣ " + self.GetStrOut(min1[6:8]) + "\n" + "2⃣ " +  self.GetStrOut(min2[6:8]) + "\n" + "3⃣ " + self.GetStrOut(min3[6:8]) + "\n"
                         await messageU.answer( text= mesOut, 
                             reply_markup=mapBut
@@ -160,7 +160,7 @@ class UserList:
                 self.listUser[userIdList].UpdateState(1)
             elif (state == 4):
                 await messageU.answer(
-                    "Ссылку на ютуб канал Терек-Радио с инструкциями: https://youtube.com/@terek-radio?si=FWB7JgVCcBpp4Ws- . Остались еще вопросы?",
+                    "Ссылка на ютуб канал Терек-Радио с инструкциями: https://youtube.com/@terek-radio?si=FWB7JgVCcBpp4Ws- . Остались еще вопросы?",
                     reply_markup=servBut.as_markup(resize_keyboard=True)
                 )
                 self.listUser[userIdList].UpdateState(5)
@@ -293,8 +293,8 @@ class UserList:
         outStr += "\n"
         if (str(array[2]) != "-"): outStr += "сайт: " + str(array[2]) + "\n"
         if (str(array[3]) != "-"): outStr += "email: " + str(array[3]) + "\n"
-        if (str(array[4]) != "-"): outStr += "осн\.тел: " + str(array[4]) + "\n"
-        if (str(array[5]) != "-"): outStr += "доп\.тел: " + str(array[5]) + "\n"
+        if (str(array[4]) != "-"): outStr += "осн.тел: " + str(array[4]) + "\n"
+        if (str(array[5]) != "-"): outStr += "доп.тел: " + str(array[5]) + "\n"
         outStr += "адрес: " + str(array[6]) + " " + str(array[7]) + "\n"
         return outStr   
     # Проверка админовских senderov

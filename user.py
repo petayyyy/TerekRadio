@@ -94,7 +94,7 @@ class UserList:
                     self.lastWorkingQuestionsId = userID
                     await self.botMaster.send_message(chatId,  text=text, reply_markup= adminButInLine.as_markup())
                     print("New Question")
-                    await messageU.answer( text="Ожидайте ответа тех. поддержки", 
+                    await messageU.answer( text="Ожидайте ответа", 
                         reply_markup=EmptyBut.as_markup(resize_keyboard=True)
                     )
                     self.listUser[userIdList].UpdateState(2)
@@ -105,7 +105,7 @@ class UserList:
                     print(self.dictQuestions)
                     await self.botMaster.send_message(chatId,  text="Ещё один вопрос в очереди")
                     print("New Question in list")
-                    await messageU.answer( text="Ожидайте ответа тех. поддержки", 
+                    await messageU.answer( text="Ожидайте ответа", 
                         reply_markup=EmptyBut.as_markup(resize_keyboard=True)
                     )
                     self.listUser[userIdList].UpdateState(2)
@@ -115,7 +115,7 @@ class UserList:
                     self.dictQuestions[self.lastWorkingQuestionsId] = self.dictQuestions[self.lastWorkingQuestionsId].append(text)
                     print("Update Question")
                     await self.botMaster.send_message(chatId,  text=text, reply_markup= questionsAdminBut.as_markup())
-                    await messageU.answer( text="Ожидайте ответа тех. поддержки", 
+                    await messageU.answer( text="Ожидайте ответа", 
                         reply_markup=EmptyBut.as_markup(resize_keyboard=True)
                     )
                     self.listUser[userIdList].UpdateState(1)
@@ -134,7 +134,8 @@ class UserList:
                     if (lat != 0 and lon != 0):
                         min1, min2, min3 = self.sh.CheckDillers(lat=lat, lon=lon)
                         self.listUser[userIdList].UpdateMap(min1, min2, min3)
-                        mesOut = "1 => " + self.GetStrOut(min1[6:8]) + "\n" + "2 => " +  self.GetStrOut(min2[6:8]) + "\n" + "3 => " + self.GetStrOut(min3[6:8]) + "\n"
+                        mesOut = "Мы нашли самых близких к Вам дилеров\.\nВыберите наиболее подходящий для Вас вариант:\n"
+                        mesOut += "1⃣ " + self.GetStrOut(min1[6:8]) + "\n" + "2⃣ " +  self.GetStrOut(min2[6:8]) + "\n" + "3⃣ " + self.GetStrOut(min3[6:8]) + "\n"
                         await messageU.answer( text= mesOut, 
                             reply_markup=mapBut
                         )
@@ -183,14 +184,14 @@ class UserList:
                 self.listUser[userIdList].ResetState()
             elif (state == 8):
                 await messageU.answer(
-                    "Напишите и оправте отзыв в одном сообщении",
+                    "Напишите и отправьте отзыв в одном сообщении",
                     reply_markup=ClearBut,
                     parse_mode="MarkdownV2"
                 )
                 self.listUser[userIdList].UpdateState(3)
             elif (state == 9):
                 await messageU.answer(
-                    "Напишите и оправте предложение в одном сообщении",
+                    "Напишите и отправьте предложение в одном сообщении",
                     reply_markup=ClearBut,
                     parse_mode="MarkdownV2"
                 )
@@ -224,7 +225,7 @@ class UserList:
                 self.listUser[userIdList].UpdateState(2)
             elif (state == 12):
                 await messageU.answer(
-                    "Напишите Ваш аддрес для подбора \nдля Вас наиближайшего диллера в формате \nГород улица, пример \nг\. Москва ул\. Пионеров",
+                    "Напишите свой адрес и мы подберем\nближайшего к Вам дилера\.\nФормат: Город и улица\nПример: г\. Москва ул\. Пионеров",
                     reply_markup=ClearBut,
                     parse_mode="MarkdownV2"
                 )
@@ -238,7 +239,8 @@ class UserList:
                 if (idCurrentU != -1):
                     uuuId = self.GetUserById(self.listmapUser[idCurrentU][0])
                     await messageU.answer(
-                        self.GetStrOut(self.listUser[uuuId].listmap[0][:8], "\n"),
+                        # self.GetStrOut(self.listUser[uuuId].listmap[0][:8], "\n"),
+                        self.GetStrMapOut(self.listUser[uuuId].listmap[0][:8]),
                         reply_markup=HomeButton.as_markup(resize_keyboard=True)
                     )
                     self.listUser[uuuId].ResetState()
@@ -252,7 +254,8 @@ class UserList:
                 if (idCurrentU != -1):
                     uuuId = self.GetUserById(self.listmapUser[idCurrentU][0])
                     await messageU.answer(
-                        self.GetStrOut(self.listUser[uuuId].listmap[1][:8], "\n"),
+                        # self.GetStrOut(self.listUser[uuuId].listmap[1][:8], "\n"),
+                        self.GetStrMapOut(self.listUser[uuuId].listmap[1][:8]),
                         reply_markup=HomeButton.as_markup(resize_keyboard=True)
                     )
                     self.listUser[uuuId].ResetState()
@@ -266,7 +269,8 @@ class UserList:
                 if (idCurrentU != -1):
                     uuuId = self.GetUserById(self.listmapUser[idCurrentU][0])
                     await messageU.answer(
-                        self.GetStrOut(self.listUser[uuuId].listmap[2][:8], "\n"),
+                        # self.GetStrOut(self.listUser[uuuId].listmap[2][:8], "\n"),
+                        self.GetStrMapOut(self.listUser[uuuId].listmap[2][:8]),
                         reply_markup=HomeButton.as_markup(resize_keyboard=True)
                     )
                     self.listUser[uuuId].ResetState()
@@ -282,6 +286,16 @@ class UserList:
         outStr = ""
         for i in array:
             outStr += str(i) + step
+        return outStr   
+    def GetStrMapOut(self, array):
+        outStr = ""
+        outStr += str(array[0]) + "\n"
+        outStr += "\n"
+        if (str(array[2]) != "-"): outStr += "сайт:" + str(array[2]) + "\n"
+        if (str(array[3]) != "-"): outStr += "email:" + str(array[3]) + "\n"
+        if (str(array[4]) != "-"): outStr += "осн\.тел:" + str(array[4]) + "\n"
+        if (str(array[5]) != "-"): outStr += "доп\.тел:" + str(array[5]) + "\n"
+        outStr += "адрес:" + str(array[6]) + " " + str(array[7]) + "\n"
         return outStr   
     # Проверка админовских senderov
     # 92 - answerM, 93 - updateDillers

@@ -16,8 +16,10 @@ def GetMapP(addrStr: str):
     addrStr = addrStr.replace("г.", "")
     addrStr = addrStr.replace(",", "")
     addrStr = addrStr.replace(".", ". ")
-    location = geocode(addrStr)
-    if (location != None): return float(location.latitude), float(location.longitude), addrStr
-    else: return 0, 0, addrStr
+    if (len(addrStr) > 2): 
+        location = geocode(addrStr)
+        if (location != None): return float(location.latitude), float(location.longitude), addrStr
+        else: return 0, 0, addrStr
+    else: return 0, 0, ""
 def DistaceBetwPoint(lat1: float, lon1: float, lat2: float, lon2: float):
     return ((lat1 - lat2)**2 + (lon1 - lon2)**2)**0.5

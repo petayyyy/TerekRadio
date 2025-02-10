@@ -43,10 +43,30 @@ async def with_puree(message: types.Message):
         parse_mode="MarkdownV2"
     )
 
+#region Buy
 # Купить
+# mapsGetB.row(
+#     types.KeyboardButton(text="Указать адрес в ручную", callback_data="mapG1"),
+#     types.KeyboardButton(text="Отправить свою геопозицию", callback_data="mapG2", request_location=True),
+# )
 @dp.message(F.text.lower() == buttons_labels[2].lower())
 async def with_puree(message: types.Message):
+    await listUs.CheckMessage(messageU=message, state=17)
+    #pass
+# @dp.callback_query(F.data == "mapG1")
+@dp.message(F.text.lower() == "Указать адрес в ручную".lower())
+async def with_puree(message: types.Message):
     await listUs.CheckMessage(messageU=message, state=12)
+
+@dp.message(F.location)
+async def handle_location(message: types.Message):
+#     location = message.location
+#     latitude = location.latitude
+#     longitude = location.longitude
+#     await message.reply(f"Спасибо! Ваши координаты: Широта: {latitude}, Долгота: {longitude}")
+# async def with_puree(message: types.Message):
+    await listUs.CheckMessage(messageU=message, state=18)
+#endregion Buy
 #region Answers
 # Вопрос
 @dp.message(F.text.lower() == buttons_labels[4].lower())
@@ -59,6 +79,9 @@ async def send_random_value(callback: types.CallbackQuery):
 
 @dp.callback_query(F.data == "answerG")
 async def send_random_value(callback: types.CallbackQuery):
+    print("chat_id", callback.from_user.id)
+    print("message_id", callback.message.message_id)
+
     await bot.edit_message_reply_markup(
         chat_id=callback.from_user.id,
         message_id=callback.message.message_id, 
@@ -139,6 +162,11 @@ async def with_puree(message: types.Message):
         #     reply_markup=ClearBut,
         #     parse_mode="MarkdownV2"
         # )
+@dp.message(Command("reset_last_user"))
+async def with_puree(message: types.Message):
+    if (listUs.CheckIsAdmin(message)):
+        await listUs.CheckAdmMessage(messageU=message, state=99)
+        print("Clear list answer")
 #endregion 
 
 #region Map
@@ -168,9 +196,9 @@ async def send_random_value(callback: types.CallbackQuery):
     await listUs.CheckMessage(messageU=callback.message, state=15)
 #endregion
 
-
 @dp.message()
 async def cmd_special_buttons(message: types.Message):
+    # print(message)
     await listUs.CheckMessage(messageU=message, state=1)
 
 # Запуск процесса поллинга новых апдейтов

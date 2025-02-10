@@ -78,3 +78,13 @@ mapBuld = [
     ]
 ]
 mapBut = types.InlineKeyboardMarkup(inline_keyboard=mapBuld)
+
+mapsGetB = ReplyKeyboardBuilder()
+# метод row позволяет явным образом сформировать ряд
+# из одной или нескольких кнопок. Например, первый ряд
+# будет состоять из двух кнопок...
+mapsGetB.row(
+    types.KeyboardButton(text="Указать адрес в ручную", callback_data="mapG1"),
+    types.KeyboardButton(text="Отправить свою геопозицию", callback_data="mapG2", request_location=True),
+)
+

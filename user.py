@@ -2,17 +2,18 @@ from configs import *
 from sheetEditor import *
 from aiogram import Bot
 from aiogram import types
-from buttons import HomeButton, EmptyBut, ClearBut, buttons_labels, buttons_comand, adminButInLine, servBut, servHBut, questionsBut, questionsAdminBut, mapBut
+from buttons import HomeButton, EmptyBut, ClearBut, buttons_labels, buttons_comand, mapsGetB, adminButInLine, servBut, servHBut, questionsBut, questionsAdminBut, mapBut
 from maps import CreateMapP, GetMapP
 
 class User:
     def __init__(self, userID: str, userName: str):
-        # 0 - none, 1 - questions first, 2 - question second, 3 - Rewies, 4 - Make offers, 5 - Start Serv, 6 - Serv 2, 7 - Map 1
+        # 0 - none, 1 - questions first, 2 - question second, 3 - Rewies, 4 - Make offers, 5 - Start Serv, 6 - Serv 2, 7 - Map 1, 8 - Map by mes data
         self.state = 0
         self.user_id = userID
         self.user_name = userName
 
         self.lastMessage = ""
+        self.lastMessageId = -1
         self.listMessage = []
 
         self.listmap = []
@@ -24,6 +25,8 @@ class User:
     def UpdateMessage(self, newMessage):
         self.lastMessage = newMessage
         self.listMessage.append(newMessage)
+    def UpdateMessageId(self, newMessage):
+        self.lastMessageId = newMessage.message_id
     # 0 - pass, 7 - Rewies, 8 - Offer
     async def SetAction(self, state, messageFromU: types.Message, sheets: SheetEditor, botM: Bot, isReset: bool = False):
         if (state == 0):
@@ -71,8 +74,9 @@ class UserList:
         5 - Сервисный центр (Все ещё остались вопросы), 6 - Сервисный центр (Помогло), 
         7 - Сервисный центр (Вопросов больше нет), 8 - Отзыв, 9 - Предложение
         10 - answerG, 11 - answerB1,
-        12 - map init, 13 - map 1, 14 - map 2, 15 - map 3б
-        16 - Вопрос тех. поддержки
+        12 - mapG2(map init), 13 - map 1, 14 - map 2, 15 - map 3б
+        16 - Вопрос тех. поддержки,
+        17 - map start init, 18 - mapG2(map by message)
         :return: None
     """
     async def CheckMessage(self, messageU: types.Message, state: int):
@@ -80,8 +84,10 @@ class UserList:
         text = messageU.text
         if (self.CheckIsAdmin(message=messageU)):
             if (self.adminState == 92):
-                await self.botMaster.send_message(self.lastWorkingQuestionsId,  text=text, reply_markup=questionsBut)
+                msg = await self.botMaster.send_message(self.lastWorkingQuestionsId,  text=text, reply_markup=questionsBut)
                 self.adminState = 93
+                userIdList = self.GetUser(userID=self.lastWorkingQuestionsId, userName="")
+                self.listUser[userIdList].UpdateMessageId(msg)
             self.adminLastState = self.adminState     
             self.adminState = state
         else:
@@ -109,7 +115,6 @@ class UserList:
                         reply_markup=EmptyBut.as_markup(resize_keyboard=True)
                     )
                     self.listUser[userIdList].UpdateState(2)
-
                 elif (self.listUser[userIdList].state == 2):
                     # Отправка второго вопроса
                     self.dictQuestions[self.lastWorkingQuestionsId] = self.dictQuestions[self.lastWorkingQuestionsId].append(text)
@@ -140,7 +145,7 @@ class UserList:
                         )
                         self.listmapUser.append([self.listUser[userIdList].user_id, messageU.chat.id])
                     else:
-                        await messageU.answer( text="Вы допустили ошибку в написании аддреса.\nПовторно напишите Ваш аддрес для подбора \nдля Вас наиближайшего диллера в формате \nГород улица, пример \nг.\ Москва ул.\ Пионеров", 
+                        await messageU.answer( text="Вы допустили ошибку в написании адреса.\nПовторно напишите Ваш аддрес для подбора \nдля Вас наиближайшего диллера в формате \nГород улица, пример \nг. Москва ул. Пионеров", 
                             reply_markup=EmptyBut.as_markup(resize_keyboard=True)
                         )
             elif (state == 2):
@@ -238,7 +243,7 @@ class UserList:
                 if (idCurrentU != -1):
                     uuuId = self.GetUserById(self.listmapUser[idCurrentU][0])
                     await messageU.answer(
-                        self.GetStrOut(self.listUser[uuuId].listmap[0][:8], "\n"),
+                        self.GetStrOut(self.listUser[uuuId].listmap[0][:8], "\n", isOut = True),
                         reply_markup=HomeButton.as_markup(resize_keyboard=True)
                     )
                     self.listUser[uuuId].ResetState()
@@ -252,7 +257,7 @@ class UserList:
                 if (idCurrentU != -1):
                     uuuId = self.GetUserById(self.listmapUser[idCurrentU][0])
                     await messageU.answer(
-                        self.GetStrOut(self.listUser[uuuId].listmap[1][:8], "\n"),
+                        self.GetStrOut(self.listUser[uuuId].listmap[1][:8], "\n", isOut = True),
                         reply_markup=HomeButton.as_markup(resize_keyboard=True)
                     )
                     self.listUser[uuuId].ResetState()
@@ -266,7 +271,7 @@ class UserList:
                 if (idCurrentU != -1):
                     uuuId = self.GetUserById(self.listmapUser[idCurrentU][0])
                     await messageU.answer(
-                        self.GetStrOut(self.listUser[uuuId].listmap[2][:8], "\n"),
+                        self.GetStrOut(self.listUser[uuuId].listmap[2][:8], "\n", isOut = True),
                         reply_markup=HomeButton.as_markup(resize_keyboard=True)
                     )
                     self.listUser[uuuId].ResetState()
@@ -278,13 +283,41 @@ class UserList:
                     parse_mode="MarkdownV2"
                 )
                 self.listUser[userIdList].UpdateState(1)
-    def GetStrOut(self, array, step:str = " "):
-        outStr = ""
+            elif (state == 17):
+                await messageU.answer(
+                    "Выберите метод нахождения ближайшей точки продажи,\nесли Вас не устраивает не один из методов отправте точку на карте через Геопозицию",
+                    reply_markup=mapsGetB.as_markup(resize_keyboard=True,  one_time_keyboard=True)
+                )
+            elif (state == 18):
+                # await messageU.answer(
+                #     "Выберите метод нахождения ближайшей точки продажи",
+                #     reply_markup=mapsGetB.as_markup(resize_keyboard=True,  one_time_keyboard=True)
+                # )
+                print("Get map by mess")
+                location = messageU.location
+                lat = location.latitude
+                lon = location.longitude
+                print(location)
+                if (lat != 0 and lon != 0):
+                    min1, min2, min3 = self.sh.CheckDillers(lat=lat, lon=lon)
+                    self.listUser[userIdList].UpdateMap(min1, min2, min3)
+                    mesOut = "1 => " + self.GetStrOut(min1[6:8]) + "\n" + "2 => " +  self.GetStrOut(min2[6:8]) + "\n" + "3 => " + self.GetStrOut(min3[6:8]) + "\n"
+                    await messageU.answer( text= mesOut, 
+                        reply_markup=mapBut
+                    )
+                    self.listmapUser.append([self.listUser[userIdList].user_id, messageU.chat.id])
+                else:
+                    await messageU.answer( text="Ваш адрес не передается попробуйте ввести в ручную или попробовать заново", 
+                        reply_markup=mapsGetB.as_markup(resize_keyboard=True)
+                    )
+    def GetStrOut(self, array, step:str = " ", isOut = False):
+        if (not isOut): outStr = ""
+        else: outStr = "Контактные данные дилера:\n"
         for i in array:
-            outStr += str(i) + step
+            if (str(i) != "" and str(i) != "-"): outStr += str(i) + step
         return outStr   
     # Проверка админовских senderov
-    # 92 - answerM, 93 - updateDillers
+    # 92 - answerM, 93 - updateDillers, 99 - clear last list question
     async def CheckAdmMessage(self, messageU: types.Message, state: int):
         if (self.CheckIsAdmin(message=messageU)):
             if (state == 92):
@@ -296,6 +329,31 @@ class UserList:
                 )  
             elif(state == 93):
                 self.sh.ReadDataDillers()
+            elif(state == 99):
+                userIdList = self.GetUser(userID=self.lastWorkingQuestionsId, userName="")
+                await self.botMaster.send_message(chatId,  text="Ответ сброшен пользователя")
+                print("lastMessageId :", self.listUser[userIdList].lastMessageId)
+                print("lastWorkingQuestionsId :", self.lastWorkingQuestionsId)
+
+                await self.botMaster.edit_message_reply_markup(
+                    chat_id=self.lastWorkingQuestionsId,
+                    message_id=self.listUser[userIdList].lastMessageId, 
+                    reply_markup=None
+                )
+                self.listUser[userIdList].ResetState()
+                if self.lastWorkingQuestionsId in self.dictQuestions: del self.dictQuestions[self.lastWorkingQuestionsId]
+                self.lastSendMesId = -1
+                self.lastWorkingQuestionsId = -1
+                state = 90
+                print(self.dictQuestions)
+                if (len(self.dictQuestions) != 0):
+                    # Выполняем следующий вопрос по ожиданию
+                    for key, values in self.dictQuestions.items():
+                        self.lastWorkingQuestionsId = key
+                        state = 91
+                        await self.botMaster.send_message(chatId,  text=values[0], reply_markup= adminButInLine.as_markup())
+                        print("New Question")
+                        break
             self.adminLastState = self.adminState     
             self.adminState = state           
     def CheckIsAdmin(self, message: types.Message):

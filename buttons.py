@@ -72,9 +72,9 @@ questionsAdminBut.add(types.InlineKeyboardButton(
 # map
 mapBuld = [
     [
-    types.InlineKeyboardButton(text="1", callback_data="map1"),
-    types.InlineKeyboardButton(text="2", callback_data="map2"),
-    types.InlineKeyboardButton(text="3", callback_data="map3")
+    types.InlineKeyboardButton(text="1⃣", callback_data="map1"),
+    types.InlineKeyboardButton(text="2⃣", callback_data="map2"),
+    types.InlineKeyboardButton(text="3⃣", callback_data="map3")
     ]
 ]
 mapBut = types.InlineKeyboardMarkup(inline_keyboard=mapBuld)

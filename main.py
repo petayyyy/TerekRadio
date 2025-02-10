@@ -20,7 +20,7 @@ dp = Dispatcher()
 @dp.message(Command("start"))
 async def cmd_special_buttons(message: types.Message):
     await message.answer(
-        "Привет, это бот Терек Радио! Выбирай в меню управления дальнейшее действие ⬇️",
+        "Добрый день! Это бот Терек-Радио. Выберите в меню управления дальнейшее действие ⬇️",
         reply_markup=HomeButton.as_markup(resize_keyboard=True),
     )
 # Отзыв

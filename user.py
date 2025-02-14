@@ -2,7 +2,7 @@ from configs import *
 from sheetEditor import *
 from aiogram import Bot
 from aiogram import types
-from buttons import HomeButton, EmptyBut, ClearBut, buttons_labels, buttons_comand, mapsGetB, adminButInLine, servBut, servHBut, questionsBut, questionsAdminBut, mapBut
+from buttons import HomeButton, EmptyBut, ClearBut, CancelBut, buttons_labels, buttons_comand, mapsGetB, adminButInLine, servBut, servHBut, questionsBut, questionsAdminBut, mapBut
 from maps import CreateMapP, GetMapP
 
 class User:
@@ -76,7 +76,7 @@ class UserList:
         10 - answerG, 11 - answerB1,
         12 - mapG2(map init), 13 - map 1, 14 - map 2, 15 - map 3б
         16 - Вопрос тех. поддержки,
-        17 - map start init, 18 - mapG2(map by message)
+        17 - map start init, 18 - mapG2(map by message), 19 - cancel
         :return: None
     """
     async def CheckMessage(self, messageU: types.Message, state: int):
@@ -159,8 +159,7 @@ class UserList:
             elif (state == 3):
                 await messageU.answer(
                     "Напишите Ваш вопрос",
-                    reply_markup=ClearBut,
-                    parse_mode="MarkdownV2"
+                    reply_markup=CancelBut.as_markup(resize_keyboard=True)
                 )
                 self.listUser[userIdList].UpdateState(1)
             elif (state == 4):
@@ -312,6 +311,12 @@ class UserList:
                     await messageU.answer( text="Ваш адрес не передается попробуйте ввести в ручную или попробовать заново", 
                         reply_markup=mapsGetB.as_markup(resize_keyboard=True)
                     )
+            elif (state == 19):
+                await messageU.answer(
+                    text="Вы не задали вопрос, но мы с радостью на него ответим!",
+                    reply_markup=HomeButton.as_markup(resize_keyboard=True)
+                )
+                self.listUser[userIdList].ResetState()
     def GetStrOut(self, array, step:str = " ", isOut = False):
         if (not isOut): outStr = ""
         else: outStr = "Контактные данные дилера:\n"
@@ -352,10 +357,6 @@ class UserList:
                     message_id=self.listUser[userIdList].lastMessageId, 
                     reply_markup=None,
                 )
-                # await self.botMaster.delete_message(
-                #     chat_id=self.lastWorkingQuestionsId,
-                #     message_id=self.listUser[userIdList].lastMessageId, 
-                # )
                 await self.botMaster.send_message(
                     text="Время ожидания вашего ответа закончилось. Диалог автоматически завершился. Если у Вас ещё остались вопросы, задавайте, мы с радостью на них ответим!",
                     chat_id=self.lastWorkingQuestionsId,

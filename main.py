@@ -45,10 +45,6 @@ async def with_puree(message: types.Message):
 
 #region Buy
 # Купить
-# mapsGetB.row(
-#     types.KeyboardButton(text="Указать адрес в ручную", callback_data="mapG1"),
-#     types.KeyboardButton(text="Отправить свою геопозицию", callback_data="mapG2", request_location=True),
-# )
 @dp.message(F.text.lower() == buttons_labels[2].lower())
 async def with_puree(message: types.Message):
     await listUs.CheckMessage(messageU=message, state=17)
@@ -64,6 +60,9 @@ async def handle_location(message: types.Message):
 #endregion Buy
 #region Answers
 # Вопрос
+@dp.message(F.text.lower() == "Отменить отправку вопроса".lower())
+async def with_puree(message: types.Message):
+    await listUs.CheckMessage(messageU=message, state=19)
 @dp.message(F.text.lower() == buttons_labels[4].lower())
 async def with_puree(message: types.Message):
     await listUs.CheckMessage(messageU=message, state=3)

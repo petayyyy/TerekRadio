@@ -49,32 +49,48 @@ class SheetEditor():
             return False
         else:
             self.listDiller = values
-            count = 2
+            count = 0
+            # print(self.listDiller)
             for dil in self.listDiller:
-                # if (len(dil) < 10 or dil[8] == "" or dil[9] == "" or dil[8] == 0 or dil[9] == 0):
-                if (len(dil) < 10):
+                if (len(dil) == 8):
                     lat, lon, addr = CreateMapP(dil[6], dil[7])    
-                    if (lat == 0 or lon == 0):  
-                        self.SendMapC(0, 0, countStr=count)                           
+                    if (lat == 0 or lon == 0): 
+                        lat, lon, addr = CreateMapP(dil[6], "")
+                        if (lat == 0 or lon == 0):     
+                            self.SendMapC(-1, -1, countStr=count)    
+                            lat, lon = -1, -1  
+                        else:
+                            self.SendMapC(lat, lon, countStr=count)                              
                     else:
                         self.SendMapC(lat, lon, countStr=count)  
                     self.listDiller[count].append(lat)   
                     self.listDiller[count].append(lon) 
-                # elif (dil[8] == 0 or dil[9] == 0):
-                #     lat, lon, addr = CreateMapP(dil[6], dil[7])    
-                #     if (lat == 0 or lon == 0):  
-                #         print(dil)
-                #         print(dil[6], dil[7], addr)  
-                #         self.SendMapC(0, 0, countStr=count)                           
+                elif (len(dil) == 10 and (dil[8] == 0 or dil[9] == 0 or dil[8] == "0" or dil[9] == "0" or dil[8] == -1 or dil[9] == -1 or dil[8] == "-1" or dil[9] == "-1")):
+                    lat, lon, addr = CreateMapP(dil[6], dil[7])    
+                    if (lat == 0 or lon == 0): 
+                        lat, lon, addr = CreateMapP(dil[6], "")
+                        if (lat == 0 or lon == 0):     
+                            self.SendMapC(-1, -1, countStr=count) 
+                            lat, lon = -1, -1     
+                        else:
+                            self.SendMapC(lat, lon, countStr=count)                              
+                    else:
+                        self.SendMapC(lat, lon, countStr=count)  
+                    self.listDiller[count][8] = lat   
+                    self.listDiller[count][9] = lon   
+                # else:
+                #     # print(dil,  self.listDiller[count])
+                #     if (len(dil) == 10):
+                #         self.listDiller[count][8] = -1   
+                #         self.listDiller[count][9] = -1
                 #     else:
-                #         self.SendMapC(lat, lon, countStr=count)  
-                #     self.listDiller[count][8] = lat   
-                #     self.listDiller[count][9] = lon    
+                #         self.listDiller[count].append(-1)   
+                #         self.listDiller[count].append(-1)     
                 count+=1
             for i in range(len(self.listDiller)):
-                if (type(self.listDiller[i][8]) == str): 
+                if (len(self.listDiller[i]) == 10 and type(self.listDiller[i][8]) == str): 
                     self.listDiller[i][8] = float(self.listDiller[i][8].replace(",", "."))
-                if (type(self.listDiller[i][9]) == str): 
+                if (len(self.listDiller[i]) == 10 and type(self.listDiller[i][9]) == str): 
                     self.listDiller[i][9] = float(self.listDiller[i][9].replace(",", "."))
             return values
     def CheckDillers(self, lat: float, lon: float):
@@ -87,6 +103,7 @@ class SheetEditor():
         return self.listDiller[arrayDist[0][0]], self.listDiller[arrayDist[1][0]], self.listDiller[arrayDist[2][0]]
         
     def SendMapC(self, lat, lon, countStr, isSleep: bool = True):
+        countStr += 2
         self.sheetService.values().update(spreadsheetId=idDillers, range=f"List1!I{countStr}", valueInputOption="USER_ENTERED", body={"values": [[lat]]}).execute()
         self.sheetService.values().update(spreadsheetId=idDillers, range=f"List1!J{countStr}", valueInputOption="USER_ENTERED", body={"values": [[lon]]}).execute()
         if (isSleep): time.sleep(1)

@@ -290,10 +290,11 @@ class UserList:
                     reply_markup=mapsGetB.as_markup(resize_keyboard=True,  one_time_keyboard=True)
                 )
             elif (state == 18):
-                # await messageU.answer(
-                #     "Выберите метод нахождения ближайшей точки продажи",
-                #     reply_markup=mapsGetB.as_markup(resize_keyboard=True,  one_time_keyboard=True)
-                # )
+                await messageU.answer(
+                    "Ваша локация обрабатывается",
+                    reply_markup=ClearBut,
+                    parse_mode="MarkdownV2"
+                )
                 print("Get map by mess")
                 location = messageU.location
                 lat = location.latitude
@@ -349,7 +350,16 @@ class UserList:
                 await self.botMaster.edit_message_reply_markup(
                     chat_id=self.lastWorkingQuestionsId,
                     message_id=self.listUser[userIdList].lastMessageId, 
-                    reply_markup=None
+                    reply_markup=None,
+                )
+                # await self.botMaster.delete_message(
+                #     chat_id=self.lastWorkingQuestionsId,
+                #     message_id=self.listUser[userIdList].lastMessageId, 
+                # )
+                await self.botMaster.send_message(
+                    text="Время ожидания вашего ответа закончилось. Диалог автоматически завершился. Если у Вас ещё остались вопросы, задавайте, мы с радостью на них ответим!",
+                    chat_id=self.lastWorkingQuestionsId,
+                    reply_markup=HomeButton.as_markup(resize_keyboard=True)
                 )
                 self.listUser[userIdList].ResetState()
                 if self.lastWorkingQuestionsId in self.dictQuestions: del self.dictQuestions[self.lastWorkingQuestionsId]

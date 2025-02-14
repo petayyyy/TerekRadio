@@ -60,11 +60,6 @@ async def with_puree(message: types.Message):
 
 @dp.message(F.location)
 async def handle_location(message: types.Message):
-#     location = message.location
-#     latitude = location.latitude
-#     longitude = location.longitude
-#     await message.reply(f"Спасибо! Ваши координаты: Широта: {latitude}, Долгота: {longitude}")
-# async def with_puree(message: types.Message):
     await listUs.CheckMessage(messageU=message, state=18)
 #endregion Buy
 #region Answers
